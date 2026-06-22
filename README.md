@@ -23,13 +23,19 @@ contexto argentino.
 
 | Fuente | Tipo | Variable que aporta |
 |---|---|---|
-| [GeoRef API](https://apis.datos.gob.ar/georef/api/) | API | Límites administrativos |
+| [GeoRef API](https://apis.datos.gob.ar/georef/api/) | API | Límites administrativos nacionales |
 | [Overpass API (OSM)](https://overpass-api.de/) | API | POIs (universidades, hospitales, oficinas) |
 | [OpenRouteService](https://openrouteservice.org/) | API (key gratis) | Isócronas de accesibilidad |
-| [INDEC Censo 2022](https://www.indec.gob.ar/) | Descarga | Demografía por radio censal |
-| [GCBA Buenos Aires Data](https://data.buenosaires.gob.ar/) | Descarga/API mixta | Permisos de obra, catastro |
-| GTFS Subte/Trenes | Descarga (URL fija) | Red de transporte público |
+| [INDEC Censo 2022](https://www.indec.gob.ar/) | Descarga | Demografía por radio censal — todo el país |
+| [GCBA Buenos Aires Data](https://data.buenosaires.gob.ar/) | Descarga/API mixta | Permisos de obra, catastro CABA |
+| GTFS Subte/Trenes | Descarga (URL fija) | Red de transporte público AMBA |
 | [Google Earth Engine](https://earthengine.google.com/) | API (cuenta gratis, no comercial) | Imágenes satelitales históricas (fase posterior) |
+| [Cartografía Censal GBA 2022](https://cartografiacensal-2022.estadistica.ec.gba.gov.ar/index.php/mapoteca/censo-2022/) | Descarga | Radios/fracciones censales Conurbano (24 partidos) |
+| [Shapes Estadística PBA](https://mapas.estadistica.ec.gba.gov.ar/portal/apps/sites/#/mapas-estadisticos/pages/descargas-shapes) | Descarga | Shapefiles oficiales PBA por partido/localidad |
+| [Estadística EC GBA](https://www.estadistica.ec.gba.gov.ar/) | Descarga/Web | Indicadores socioeconómicos Provincia de Buenos Aires |
+| [IGN — Capas SIG](https://www.ign.gob.ar/NuestrasActividades/InformacionGeoespacial/CapasSIG) | WFS/Descarga | Cartografía oficial: provincias, departamentos, localidades, rutas |
+| [SimpleMaps ARG](https://simplemaps.com/country/ar/) | Descarga CSV | ~47.000 localidades con lat/lon, población y jerarquía |
+| [Poblaciones.org](https://mapa.poblaciones.org/) | Web/API | Población desagregada por radio censal, visualización |
 
 ## Roadmap
 
