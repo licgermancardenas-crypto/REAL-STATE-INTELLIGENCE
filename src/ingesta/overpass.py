@@ -237,7 +237,21 @@ def bbox_from_georef(barrio: str, offset_deg: float = 0.025) -> tuple[float, flo
 
 if __name__ == "__main__":
     import sys
-    barrio   = sys.argv[1] if len(sys.argv) > 1 else "Palermo"
+    args = sys.argv[1:]
+
+    # Si todos los args son categorías conocidas → usarlas con barrio default Palermo.
+    # Si el primer arg no es categoría → es el nombre del barrio; el resto son categorías.
+    known_cats = set(POI_CATEGORIES.keys())
+    if args and args[0] in known_cats:
+        barrio = "Palermo"
+        cats = args
+    elif args:
+        barrio = args[0]
+        cats = args[1:] if len(args) > 1 else None  # None = todas
+    else:
+        barrio = "Palermo"
+        cats = None
+
     ciudad_id = f"caba_{barrio.lower().replace(' ', '_')}"
 
     bbox = bbox_from_georef(barrio)
@@ -245,4 +259,4 @@ if __name__ == "__main__":
         logger.warning("Usando bbox hardcodeado de fallback")
         bbox = (-58.4460, -34.6062, -58.3960, -34.5562)  # Palermo centroid ± 0.025°
 
-    save_pois(ciudad_id, bbox, categories=["educacion", "transporte", "espacios_verdes"])
+    save_pois(ciudad_id, bbox, categories=cats)
