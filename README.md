@@ -1,47 +1,64 @@
-# Real State Intelligence
+# Real Estate Intelligence Argentina 🏗️🇦🇷
 
-**Location Intelligence Platform — Alpha Generation Engine**
+Sistema de inteligencia geoespacial para análisis de ciudades, barrios y terrenos 
+en Argentina, orientado a decisiones de inversión y desarrollo inmobiliario.
 
-Plataforma de analítica geoespacial que fusiona Big Data urbano con Machine Learning para auditar ciudades a nivel de lote. Identifica zonas con potencial de apreciación inmobiliaria antes de que se vuelvan evidentes para el mercado.
+Construido 100% con APIs gratuitas, datos públicos y código abierto — sin 
+dependencia de herramientas pagas (CoStar, Reonomy, Google Maps, etc).
 
-## Stack
+## Objetivo
 
-| Capa | Tech |
-|---|---|
-| Frontend | Next.js 15 + MapLibre GL JS + shadcn/ui |
-| Backend | FastAPI + Python 3.11 |
-| ML | geopandas + PySAL + scikit-learn |
-| DB | PostgreSQL + PostGIS |
+Replicar — y en algunos aspectos superar — el nivel de análisis que usan 
+fondos institucionales internacionales (Blackstone, Brookfield, PGIM) para 
+decidir dónde comprar terrenos y desarrollar real estate, adaptado 100% al 
+contexto argentino.
 
-## Estructura
+## Filosofía del proyecto
 
-```
-apps/web      → Next.js dashboard
-apps/api      → FastAPI REST API
-data/etl      → Pipelines de ingesta (OSM, INDEC, Zonaprop)
-data/models   → Feature engineering + Alpha Score model
-db/migrations → Schema PostGIS
-```
+- **Cero costo de infraestructura**: todo corre con APIs gratuitas y datasets públicos.
+- **Decisiones basadas en datos, no en intuición**: cada variable del modelo tiene una fuente verificable y un peso explícito.
+- **Foco geográfico**: Argentina, empezando por CABA y expandiendo a conurbano y otras provincias.
 
-## Quick start
+## Fuentes de datos
 
-```bash
-# API
-cd apps/api
-cp .env.example .env
-pip install -r requirements.txt
-uvicorn main:app --reload
+| Fuente | Tipo | Variable que aporta |
+|---|---|---|
+| [GeoRef API](https://apis.datos.gob.ar/georef/api/) | API | Límites administrativos |
+| [Overpass API (OSM)](https://overpass-api.de/) | API | POIs (universidades, hospitales, oficinas) |
+| [OpenRouteService](https://openrouteservice.org/) | API (key gratis) | Isócronas de accesibilidad |
+| [INDEC Censo 2022](https://www.indec.gob.ar/) | Descarga | Demografía por radio censal |
+| [GCBA Buenos Aires Data](https://data.buenosaires.gob.ar/) | Descarga/API mixta | Permisos de obra, catastro |
+| GTFS Subte/Trenes | Descarga (URL fija) | Red de transporte público |
+| [Google Earth Engine](https://earthengine.google.com/) | API (cuenta gratis, no comercial) | Imágenes satelitales históricas (fase posterior) |
 
-# Web
-cd apps/web
-cp .env.local.example .env.local
-npm install
-npm run dev
-```
+## Roadmap
 
-## Ciudades MVP
+- [x] Fase 0: Definición de arquitectura y fuentes de datos
+- [ ] Fase 1: MVP — pipeline de ingesta validado (GeoRef + Overpass + ORS) sobre un barrio piloto (Palermo, CABA)
+- [ ] Fase 2: Carga de límites reales de barrios CABA + datos INDEC por radio censal
+- [ ] Fase 3: Modelo de scoring ponderado por zona
+- [ ] Fase 4: Imágenes satelitales (Google Earth Engine) — evolución urbana histórica
+- [ ] Fase 5: Dashboard interactivo (Streamlit)
+- [ ] Fase 6: Expansión a otras ciudades de Argentina
 
-- Ciudad de Buenos Aires (CABA)
-- Rosario
-- Córdoba
-- Mendoza
+## Stack técnico
+
+- Python 3.11+
+- geopandas, pandas, scikit-learn
+- PostgreSQL + PostGIS (vía Supabase free tier)
+- Streamlit / Folium para visualización
+
+## Estado actual
+
+🚧 En desarrollo — Fase 1 (MVP de ingesta)
+
+## Disclaimer
+
+Proyecto personal de investigación y análisis. No constituye asesoramiento 
+de inversión. Los datos provienen de fuentes públicas oficiales y APIs 
+gratuitas; verificar siempre con fuentes primarias antes de tomar decisiones 
+de inversión reales.
+
+## Autor
+
+German Cardenas
