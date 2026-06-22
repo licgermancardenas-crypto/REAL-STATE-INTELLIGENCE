@@ -1,0 +1,39 @@
+# ── Core geoespacial ──────────────────────────
+geopandas==1.0.1
+shapely==2.0.6
+pyproj==3.7.0
+fiona==1.10.1
+rtree==1.3.0
+
+# ── Datos / ML ────────────────────────────────
+pandas==2.2.3
+numpy==2.1.3
+scikit-learn==1.5.2
+scipy==1.14.1
+libpysal==4.12.1
+esda==2.6.0
+
+# ── Visualización ─────────────────────────────
+streamlit==1.41.0
+folium==0.19.2
+streamlit-folium==0.23.1
+plotly==5.24.1
+
+# ── HTTP / APIs ───────────────────────────────
+httpx==0.28.0
+tenacity==9.0.0
+
+# ── DB ────────────────────────────────────────
+supabase==2.10.0
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.36
+geoalchemy2==0.15.2
+
+# ── GTFS ──────────────────────────────────────
+gtfs-kit==6.1.2
+
+# ── Utilidades ────────────────────────────────
+python-dotenv==1.0.1
+loguru==0.7.3
+joblib==1.4.2
+tqdm==4.67.1
