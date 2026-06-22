@@ -13,10 +13,12 @@ DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
 
 # ── APIs ──────────────────────────────────────
 GEOREF_BASE = "https://apis.datos.gob.ar/georef/api"
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+OVERPASS_URL = "https://lz4.overpass-api.de/api/interpreter"      # servidor secundario — el primario (overpass-api.de) bloquea esta IP
+OVERPASS_FALLBACK = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 ORS_BASE = "https://api.openrouteservice.org/v2"
 ORS_API_KEY = os.getenv("ORS_API_KEY", "")
-GCBA_BASE = "https://datosabiertos.buenosaires.gob.ar/api/3/action"
+GCBA_BASE = "https://data.buenosaires.gob.ar/api/3/action"
+GCBA_CDN = "https://cdn.buenosaires.gob.ar/datosabiertos/datasets"
 
 # ── IGN — WFS oficial ─────────────────────────
 IGN_WFS_BASE = "https://wfs.ign.gob.ar/geoserver/ows"
