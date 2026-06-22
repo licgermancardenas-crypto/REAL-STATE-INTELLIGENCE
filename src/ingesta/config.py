@@ -13,8 +13,13 @@ DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
 
 # ── APIs ──────────────────────────────────────
 GEOREF_BASE = "https://apis.datos.gob.ar/georef/api"
-OVERPASS_URL = "https://lz4.overpass-api.de/api/interpreter"      # servidor secundario — el primario (overpass-api.de) bloquea esta IP
-OVERPASS_FALLBACK = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+# Cadena de fallbacks Overpass (en orden de prioridad). Ver overpass.py para detalle.
+OVERPASS_ENDPOINTS = [
+    "https://overpass-api.de/api/interpreter",             # 1. canónica
+    "https://overpass.kumi.systems/api/interpreter",       # 2. mirror comunitario
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",  # 3. VK/Mail.ru
+]
+OHSOME_BASE = "https://api.ohsome.org/v1"                 # 4. último fallback (API distinta)
 ORS_BASE = "https://api.openrouteservice.org/v2"
 ORS_API_KEY = os.getenv("ORS_API_KEY", "")
 GCBA_BASE = "https://data.buenosaires.gob.ar/api/3/action"
