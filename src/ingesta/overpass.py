@@ -93,9 +93,11 @@ def _fetch_overpass(query: str) -> list[dict] | None:
         "Content-Type": "application/x-www-form-urlencoded",
     }
     for i, endpoint in enumerate(OVERPASS_ENDPOINTS):
-        # Timeout más corto para los primeros dos endpoints para no bloquear si no responden.
-        # El tercero (maps.mail.ru) gets el timeout completo porque es el que funciona.
-        timeout = 90 if i == len(OVERPASS_ENDPOINTS) - 1 else 20
+        # overpass-api.de devuelve 406 al instante (IP bloqueada).
+        # kumi.systems tarda consistentemente >5s antes de agotar el timeout.
+        # 5s es suficiente para detectar un mirror sano; el último (maps.mail.ru)
+        # recibe 90s porque es el que funciona y procesa queries grandes.
+        timeout = 90 if i == len(OVERPASS_ENDPOINTS) - 1 else 5
         try:
             resp = httpx.post(endpoint, data={"data": query}, headers=headers, timeout=timeout)
             if resp.status_code == 200:

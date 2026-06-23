@@ -28,7 +28,9 @@ Uso:
   python src/models/feature_engineering.py Belgrano     # otro barrio
 """
 import math
+import re
 import sys
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -61,8 +63,21 @@ POI_CATEGORIES = [
 # NIVEL BARRIO
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _load_barrio(nombre: str) -> gpd.GeoDataFrame:
-    gdf = gpd.read_file(BARRIOS_GEOJSON)
+def _slugify(name: str) -> str:
+    """'Nuñez' → 'nunez', 'Villa Gral. Mitre' → 'villa_gral_mitre'"""
+    name = unicodedata.normalize('NFKD', name)
+    name = ''.join(c for c in name if not unicodedata.combining(c))
+    name = name.lower()
+    name = re.sub(r'[^a-z0-9\s]', '', name)
+    name = re.sub(r'\s+', '_', name.strip())
+    return name
+
+
+def _load_barrio(
+    nombre: str,
+    barrios_gdf: gpd.GeoDataFrame | None = None,
+) -> gpd.GeoDataFrame:
+    gdf = barrios_gdf if barrios_gdf is not None else gpd.read_file(BARRIOS_GEOJSON)
     match = gdf[gdf["nombre"].str.lower() == nombre.lower()]
     if match.empty:
         avail = sorted(gdf["nombre"].tolist())
@@ -106,14 +121,20 @@ def _compute_poi_densities(area_km2: float, clean_dir: Path) -> tuple:
     return feats, counts
 
 
-def _compute_subte_distance(centroid_geom) -> tuple:
+def _compute_subte_distance(
+    centroid_geom,
+    stops_gdf: gpd.GeoDataFrame | None = None,
+) -> tuple:
     """Distancia metrica al stop de subte mas cercano. Devuelve (metros, nombre)."""
-    stops_raw = gpd.read_file(SUBTE_STOPS)
+    if stops_gdf is not None:
+        stops_raw = stops_gdf.copy()
+    else:
+        stops_raw = gpd.read_file(SUBTE_STOPS)
     stops_raw["stop_lat"] = pd.to_numeric(stops_raw["stop_lat"], errors="coerce")
     stops_raw["stop_lon"] = pd.to_numeric(stops_raw["stop_lon"], errors="coerce")
     stops_raw = stops_raw.dropna(subset=["stop_lat", "stop_lon"])
 
-    stops_gdf = gpd.GeoDataFrame(
+    stops_proj = gpd.GeoDataFrame(
         stops_raw,
         geometry=gpd.points_from_xy(stops_raw["stop_lon"], stops_raw["stop_lat"]),
         crs="EPSG:4326",
@@ -125,7 +146,7 @@ def _compute_subte_distance(centroid_geom) -> tuple:
         .geometry.iloc[0]
     )
 
-    distances   = stops_gdf.geometry.distance(centroid_proj)
+    distances   = stops_proj.geometry.distance(centroid_proj)
     nearest_idx = distances.idxmin()
     min_dist    = distances.loc[nearest_idx]
     stop_name   = (
@@ -136,20 +157,26 @@ def _compute_subte_distance(centroid_geom) -> tuple:
     return round(float(min_dist), 1), str(stop_name)
 
 
-def build_barrio_features(barrio: str = "Palermo", ciudad_id: str = "caba") -> pd.DataFrame:
+def build_barrio_features(
+    barrio: str = "Palermo",
+    ciudad_id: str = "caba",
+    barrios_gdf: gpd.GeoDataFrame | None = None,
+    stops_gdf: gpd.GeoDataFrame | None = None,
+) -> pd.DataFrame:
     """
-    Calcula el vector de features para un barrio completo y lo guarda como CSV.
+    Calcula el vector de features para un barrio y lo guarda como CSV.
+    barrios_gdf / stops_gdf: pasa DataFrames precargados para modo batch.
     """
-    logger.info(f"Feature engineering barrio: {barrio} ({ciudad_id})")
+    logger.info(f"Features: {barrio} ({ciudad_id})")
 
-    barrio_gdf = _load_barrio(barrio)
-    row        = barrio_gdf.iloc[0]
-    area_km2   = _area_km2_from_row(row)
-    centroid   = row.geometry.centroid
+    barrio_match = _load_barrio(barrio, barrios_gdf)
+    row          = barrio_match.iloc[0]
+    area_km2     = _area_km2_from_row(row)
+    centroid     = row.geometry.centroid
 
     logger.info(f"  Area: {area_km2:.3f} km2 | Centroide: ({centroid.y:.4f}, {centroid.x:.4f})")
 
-    slug      = f"{ciudad_id}_{barrio.lower().replace(' ', '_')}"
+    slug      = f"{ciudad_id}_{_slugify(barrio)}"
     clean_dir = DATA_PROCESSED / "osm" / f"{slug}_clean"
     if not clean_dir.exists():
         raise FileNotFoundError(
@@ -158,22 +185,28 @@ def build_barrio_features(barrio: str = "Palermo", ciudad_id: str = "caba") -> p
         )
 
     density_feats, counts = _compute_poi_densities(area_km2, clean_dir)
-    dist_subte, stop_name = _compute_subte_distance(centroid)
+    dist_subte, stop_name = _compute_subte_distance(centroid, stops_gdf)
     n_sig                 = sum(1 for c in counts if c >= MIN_POIS_SIGNIFICANT)
     h, h_norm             = _shannon_entropy(counts)
 
+    # Entropia excluyendo transporte: evita que bus stops (60% del total) enmascaren
+    # la diversidad real del barrio en comercio/educacion/salud/oficinas/verde
+    idx_ex_t  = [i for i, c in enumerate(POI_CATEGORIES) if c != "transporte"]
+    h_ex, h_ex_norm = _shannon_entropy([counts[i] for i in idx_ex_t])
+
     record = {
-        "barrio":             barrio,
-        "ciudad":             ciudad_id,
-        "area_km2":           round(area_km2, 4),
-        "centroid_lat":       round(centroid.y, 6),
-        "centroid_lon":       round(centroid.x, 6),
-        "dist_subte_m":       dist_subte,
-        "nearest_subte_stop": stop_name,
+        "barrio":                    barrio,
+        "ciudad":                    ciudad_id,
+        "area_km2":                  round(area_km2, 4),
+        "centroid_lat":              round(centroid.y, 6),
+        "centroid_lon":              round(centroid.x, 6),
+        "dist_subte_m":              dist_subte,
+        "nearest_subte_stop":        stop_name,
         **density_feats,
-        "div_n_cats":         n_sig,
-        "div_entropy":        h,
-        "div_entropy_norm":   h_norm,
+        "div_n_cats":                n_sig,
+        "div_entropy":               h,
+        "div_entropy_norm":          h_norm,
+        "div_entropy_ex_transporte": h_ex_norm,
     }
 
     df = pd.DataFrame([record])
@@ -295,16 +328,21 @@ def print_barrio_features(df: pd.DataFrame) -> None:
 
     print(f"\n  -- Diversidad de POIs --")
     print(f"  Categorias >= {MIN_POIS_SIGNIFICANT} POIs:  {int(row['div_n_cats'])}/6")
-    print(f"  Shannon H:               {row['div_entropy']:.4f}  (max ln(6)={math.log(6):.4f})")
-    print(f"  H normalizada (0-1):     {row['div_entropy_norm']:.4f}")
-    quality = (
-        "Alta diversidad"
-        if row["div_entropy_norm"] > 0.8
-        else "Diversidad media (transporte domina parcialmente)"
-        if row["div_entropy_norm"] > 0.6
-        else "Baja diversidad (una cat domina)"
+    print(f"  Shannon H (todas):       {row['div_entropy']:.4f}  (max ln(6)={math.log(6):.4f})")
+    print(f"  H norm (todas):          {row['div_entropy_norm']:.4f}")
+    print(f"  H norm (ex transporte):  {row['div_entropy_ex_transporte']:.4f}  <- comercio/edu/verde/ofi/salud")
+    quality_all = (
+        "Alta" if row["div_entropy_norm"] > 0.8
+        else "Media" if row["div_entropy_norm"] > 0.6
+        else "Baja (una cat domina)"
     )
-    print(f"  Lectura:                 {quality}")
+    quality_ex = (
+        "Alta" if row["div_entropy_ex_transporte"] > 0.8
+        else "Media" if row["div_entropy_ex_transporte"] > 0.6
+        else "Baja (una cat domina)"
+    )
+    print(f"  Lectura todas cats:      {quality_all}")
+    print(f"  Lectura ex-transporte:   {quality_ex}")
     print()
 
 
