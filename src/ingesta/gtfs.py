@@ -25,10 +25,17 @@ def download_gtfs(url: str, nombre: str) -> dict[str, pd.DataFrame]:
 
     tables: dict[str, pd.DataFrame] = {}
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
-        for name in zf.namelist():
+        names = zf.namelist()
+        # GCBA CDN entrega un ZIP anidado (el único entry es otro ZIP)
+        if len(names) == 1 and not names[0].endswith(".txt"):
+            inner_bytes = zf.read(names[0])
+            zf2 = zipfile.ZipFile(io.BytesIO(inner_bytes))
+        else:
+            zf2 = zf
+        for name in zf2.namelist():
             if name.endswith(".txt"):
-                key = name.replace(".txt", "")
-                tables[key] = pd.read_csv(zf.open(name), dtype=str)
+                key = name.replace(".txt", "").lstrip("/")
+                tables[key] = pd.read_csv(zf2.open(name), dtype=str)
                 logger.info(f"  {name}: {len(tables[key])} filas")
 
     return tables

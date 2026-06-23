@@ -64,7 +64,7 @@ PILOT_BARRIO = "Palermo"
 PILOT_CIUDAD = "Ciudad Autónoma de Buenos Aires"
 
 # ── GTFS ──────────────────────────────────────
-GTFS_SUBTE_URL = "https://www.metrovias.com.ar/gtfs/metrovias_gtfs.zip"
+GTFS_SUBTE_URL = "https://cdn.buenosaires.gob.ar/datosabiertos/datasets/sbase/subte-gtfs/subte-gtfs-zip.zip"
 GTFS_TRENES_URL = "https://datos.transporte.gob.ar/dataset/gtfs-ferroviario"
 
 # ── Ciudades ──────────────────────────────────
