@@ -1,0 +1,32 @@
+# ── Build artifacts ──────────────────────────
+apps/web/node_modules
+apps/web/.next
+apps/web/out
+apps/web/build
+
+# ── Data pipeline (Python, not needed for frontend) ──
+data/
+src/
+db/
+
+# ── Python artifacts ──────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── Large geo files ───────────────────────────
+*.gpkg
+*.geojson.gz
+*.parquet
+*.feather
+*.shp
+*.dbf
+*.shx
+
+# ── Secrets ───────────────────────────────────
+.env
+.env.local
+*.env

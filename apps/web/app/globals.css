@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* MapLibre popup skin */
+.rsi-popup .maplibregl-popup-content {
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+.rsi-popup .maplibregl-popup-tip {
+  border-top-color: #1e293b;
+}
+.maplibregl-ctrl-attrib {
+  background: rgba(15,23,42,0.8) !important;
+  color: rgba(255,255,255,0.3) !important;
+}
+.maplibregl-ctrl-attrib a { color: rgba(255,255,255,0.4) !important; }
